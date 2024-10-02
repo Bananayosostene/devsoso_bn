@@ -12,7 +12,7 @@ contactRouter.get(
     "/get/:contactId",
     isAuthenticated,
     checkPermission,
-    contactController.findContactById
+    contactController.viewMessage
 );
 contactRouter.get(
     "/gets",
@@ -20,6 +20,11 @@ contactRouter.get(
     checkPermission,
     contactController.findAllContacts
 );
+contactRouter.post(
+    '/:contactId/reply',
+    isAuthenticated,
+    checkPermission,
+    contactController.replyToContact);
 contactRouter.delete(
     "/delete/:contactId",
     isAuthenticated,

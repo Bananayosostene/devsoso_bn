@@ -4,6 +4,8 @@ interface ContactAttributes {
   name: string;
   email: string;
   message: string;
+  status: string;
+  replied: boolean;
   createdAt: string; 
   
 }
@@ -32,6 +34,14 @@ const contactSchema: Schema<ContactDocument> = new mongoose.Schema({
   },
   message: {
     type: String,
+  },
+  status: {
+    type: String,
+    default: "unread",
+  },
+  replied: {
+    type: Boolean,
+    default: false
   },
   createdAt: {
     type: String,
