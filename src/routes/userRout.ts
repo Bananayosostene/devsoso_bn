@@ -38,6 +38,12 @@ userRoute.get(
     checkPermission,
     UserController.findAllUsers
 );
+userRoute.put(
+  '/:userId/role',
+  isAuthenticated,
+  checkPermission,
+  UserController.updateUserRole as express.RequestHandler
+);
 userRoute.delete(
     "/delete/:userId",
     isAuthenticated,

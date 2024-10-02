@@ -94,9 +94,39 @@ static findAllUsers = async (req: Request, res: Response) => {
         data: null,
       });
     }
+  };
+  
+static updateUserRole = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
+  try {
+    const { userId } = req.params;
+    const { role } = req.body;
+
+    if (role !== 'admin' && role !== 'user') {
+      return res.status(400).json({ message: "Invalid role. Must be 'admin' or 'user'." });
+    }
+
+    const existingUser = await UserModel.findById(userId);
+
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (role === existingUser.role) {
+      return res.status(400).json({ message: `User is already a${role === 'admin' ? 'n' : ''} ${role}` });
+    }
+
+    existingUser.role = role;
+    const updatedUser = await existingUser.save();
+
+    return res.status(200).json({
+      message: "User role updated successfully",
+      data: updatedUser.toObject({ getters: true, versionKey: false, transform: (doc, ret) => { delete ret.password; return ret; }})
+    });
+
+  } catch (error: any) {
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+  }
 };
-
-
 
 static deleteUserById = async (req: Request, res: Response) => {
     const id: string = req.params.userId;
