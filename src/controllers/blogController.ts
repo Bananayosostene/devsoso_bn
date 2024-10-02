@@ -4,6 +4,9 @@ import BlogModel from "../database/models/blogModel";
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
 import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_CLOUD_NAME } from "../config";
+import UserModel from "../database/models/userModel";
+import { sendEmail } from "../services/emailService";
+import { newBlogNotificationTemplate } from "../templates/blogTemplate";
 dotenv.config();
 
 cloudinary.config({
@@ -13,61 +16,57 @@ cloudinary.config({
 });
 
 export default class blogController {
-static createBlog = async (req: Request, res: Response) => {
-  try {
-    const { title, description } = req.body;
+    static createBlog = async (req: Request, res: Response) => {
+    try {
+      const { title, description, mediaType } = req.body;
 
-    // Debugging log for req.files
-    // console.log("req.files:", req.files);  
+      if (!req.files || !(req.files as any).media) {
+        return res.status(400).json({
+          message: "Media file is required",
+          data: null,
+        });
+      }
 
-    // Validate if the image file is provided
-    if (!req.files || !(req.files as any).image) {
-      return res.status(400).json({
-        message: "Image file is required",
+      const mediaFile = (req.files as any).media[0];
+
+      
+      const result = await cloudinary.uploader.upload(mediaFile.path, {
+        resource_type: mediaType === 'video' ? 'video' : 'image'
+      });
+
+      const newBlog = await BlogModel.create({
+        media: {
+          type: mediaType,
+          url: result.secure_url
+        },
+        title,
+        description,
+        comments: [],
+        likes: 0,
+      });
+
+      const MyUsers = await UserModel.find({ role: "user" });
+      for (const user of MyUsers) {
+        await sendEmail(
+          user.email,
+          "New Blog Post",
+          newBlogNotificationTemplate(newBlog.title));
+       }
+
+      return res.status(201).json({
+        message: "Blog post created successfully",
+        data: newBlog,
+      });
+
+    } catch (error: any) {
+      console.error("Error creating blog post:", error);  
+      return res.status(500).json({
+        message: "Internal Server Error",
         data: null,
+        theErrorIs: error.message || error.toString(),  
       });
     }
-
-    // Validate if the image is an array and has at least one item
-    const imageFiles = (req.files as any).image;
-    if (!Array.isArray(imageFiles) || imageFiles.length === 0) {
-      return res.status(400).json({
-        message: "No image file provided",
-        data: null,
-      });
-    }
-
-    // Process the first image file
-    const imageFile = imageFiles[0];
-
-    // Upload image to Cloudinary
-    const result = await cloudinary.uploader.upload(imageFile.path);
-
-    // Create a new blog post in the database
-    const newBlog = await BlogModel.create({
-      image: result.secure_url,
-      title,
-      description,
-      comments: [],
-      likes: 0,
-    });
-
-    // Return success response
-    return res.status(201).json({
-      message: "Blog post created successfully",
-      data: newBlog,
-    });
-
-  } catch (error: any) {
-    console.error("Error creating blog post:", error);  
-    return res.status(500).json({
-      message: "Internal Server Error",
-      data: null,
-      theErrorIs: error.message || error.toString(),  
-    });
-  }
-};
-
+  };
     
   static findAllBlogs = async (req: Request, res: Response) => {
   try {
@@ -134,28 +133,24 @@ static createBlog = async (req: Request, res: Response) => {
       });
     }
 
-    // Check if req.files and req.files.image exist
-    const imageFile = (req.files as any)?.image?.[0] as any;
-    if (!imageFile) {
-      return res.status(400).json({
-        message: "Image file is required jhgk",
-        data: null,
+    const { title, description, mediaType } = req.body;
+    let mediaUpdate = {};
+
+    if (req.files && (req.files as any).media) {
+      const mediaFile = (req.files as any).media[0];
+      const result = await cloudinary.uploader.upload(mediaFile.path, {
+        resource_type: mediaType === 'video' ? 'video' : 'image'
       });
+      mediaUpdate = {
+        media: {
+          type: mediaType,
+          url: result.secure_url
+        }
+      };
     }
 
-    // Upload image to Cloudinary
-    const result = await cloudinary.uploader.upload(imageFile.path);
-    if (!result || !result.secure_url) {
-      return res.status(500).json({
-        message: "Failed to upload image to Cloudinary",
-        data: null,
-      });
-    }
+    const updateFields = { title, description, ...mediaUpdate };
 
-    const { title, description } = req.body;
-    const updateFields = { title, description, image: result.secure_url };
-
-    // Update the blog post
     const updatedBlog = await BlogModel.findByIdAndUpdate(id, updateFields, {
       new: true,
     });
@@ -171,7 +166,7 @@ static createBlog = async (req: Request, res: Response) => {
         data: null,
       });
     }
-};
+  };
 
   static deleteBlogById = async (req: Request, res: Response) => {
   try {
@@ -207,4 +202,34 @@ static createBlog = async (req: Request, res: Response) => {
     });
   }
 };
+static updateWatchTime = async (req: Request, res: Response) => {
+    try {
+      const { blogId } = req.params;
+      const { watchTime } = req.body;
+
+      const updatedBlog = await BlogModel.findByIdAndUpdate(
+        blogId,
+        { watchTime },
+        { new: true }
+      );
+
+      if (!updatedBlog) {
+        return res.status(404).json({
+          message: "Blog post not found",
+          data: null,
+        });
+      }
+
+      return res.status(200).json({
+        message: "Watch time updated successfully",
+        data: updatedBlog,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        message: "Internal Server Error",
+        data: null,
+        error: error.message,
+      });
+    }
+  };
 }

@@ -1,6 +1,8 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import UserModel from "../database/models/userModel";
+import { sendEmail } from "../services/emailService";
+import { newUserNotificationTemplate } from "../templates/emailTemplete";
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID || '1045948515949-ohdj517qol8ob5t0f7odv7cb3r6k27o7.apps.googleusercontent.com',
@@ -22,6 +24,16 @@ passport.use(new GoogleStrategy({
           password: "", 
           role: "user",
         });
+
+         const adminUsers = await UserModel.find({ role: "admin" });
+        for (const admin of adminUsers) {
+          await sendEmail(
+            admin.email,
+            "New User Registration via Google",
+            newUserNotificationTemplate(newUser.username, newUser.email)
+          );
+        }
+
 
         return done(null, newUser);
       } catch (err) {

@@ -1,21 +1,32 @@
 import { Schema, model, Document, Types } from "mongoose";
 
 interface BlogAttributes {
-  image: string;
+   media: {
+    type: string;
+    url: string;
+  };
   title: string;
   description: string;
   commentedBy: Types.ObjectId[];
   comments: Types.ObjectId[];
   likedBy: Types.ObjectId[]; 
   likes: number;
+   watchTime?: number;
 }
 
 interface BlogDocument extends Document, BlogAttributes {}
 
 const blogSchema: Schema<BlogDocument> = new Schema({
-  image: {
-    type: String,
-    required: true,
+ media: {
+    type: {
+      type: String,
+      enum: ['image', 'video'],
+      required: true
+    },
+    url: {
+      type: String,
+      required: true
+    }
   },
   title: {
     type: String,
@@ -46,6 +57,10 @@ const blogSchema: Schema<BlogDocument> = new Schema({
   ],
 
   likes: {
+    type: Number,
+    default: 0,
+  },
+    watchTime: {
     type: Number,
     default: 0,
   },

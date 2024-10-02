@@ -27,5 +27,10 @@ blogRouter.patch(
     uploaded,
     blogController.updateBlogById
 );
+blogRouter.patch(
+    "/updateWatchTime/:blogId",
+    isAuthenticated,
+    blogController.updateWatchTime
+);
 
 export default blogRouter;

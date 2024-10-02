@@ -5,7 +5,9 @@ import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_CLOUD_NAME } from
 import { getUserByIdHelper } from "../services/userService";
 import { hashPassword } from "../utils/password";
 import { AuthenticatedRequest } from "../middlewares/authMiddleware";
-
+import { sendEmail } from "../services/emailService";
+import { newUserNotificationTemplate } from "../templates/emailTemplete";
+import { validateEmail } from "../utils/emailValidator";
 cloudinary.config({
   cloud_name: CLOUDINARY_CLOUD_NAME,
   api_key: CLOUDINARY_API_KEY,
@@ -31,12 +33,16 @@ export default class UserController {
     const hashedPass = await hashPassword(password);
 
     // Create new user object
-    const user = { ...otherDetails,  email, password: hashedPass };
+    const user = { ...otherDetails, email, password: hashedPass };
 
     // Save the new user in the database
     const newUser = await UserModel.create(user);
 
     if (newUser) {
+      const adminUsers = await UserModel.find({ role: "admin" });
+      for(const adminUser of adminUsers) {
+        await sendEmail(adminUser.email, "New User Registration", newUserNotificationTemplate(newUser.username, newUser.email));
+      }
       return res.status(201).json({
         message: "Signup successful",
         // data: newUser,

@@ -150,7 +150,7 @@ static findCommentsOnBlog = async (req: Request, res: Response) => {
       message: "Comments on the blog retrieved successfully",
       data: {
         _id: blog._id,
-        image: blog.image,
+        image: blog.media,
         title: blog.title,
         description: blog.description,
         comments: blog.comments,
