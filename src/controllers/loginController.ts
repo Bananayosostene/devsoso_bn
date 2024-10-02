@@ -5,7 +5,6 @@ import { comparePassword} from "../utils/password";
 
 
 export default class loginController {
-    // ================ LOGIN ============================
 
 static login = async (req: Request, res: Response) => {
     const userEmail = req.body.email;
@@ -53,7 +52,6 @@ static login = async (req: Request, res: Response) => {
     const token = generateToken(tokenData);
     res.setHeader('Authorization', `Bearer ${token}`);
 
-    // Redirect with token to the dashboard
     res.redirect(`/dashboard?token=${token}`);
   } catch (error) {
     console.error('Google login error:', error);

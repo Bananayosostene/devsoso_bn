@@ -51,11 +51,9 @@ export const checkPermission = async (
 ) => {
   try {
     const authenticatedReq = req as AuthenticatedRequest;
-    // console.log("===== req.user: ========================hjgjh  ", authenticatedReq.user);
     if (!authenticatedReq.user) {
       return res.status(401).json({
         message: "Unauthorized - User not authenticated",
-        // error: error.message,
       });
     }
   

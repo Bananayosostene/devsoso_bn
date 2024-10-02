@@ -17,10 +17,8 @@ export default class UserController {
 
   static createUser = async (req: Request, res: Response) => {
   try {
-    // Destructure email from request body
     const { email, password, ...otherDetails } = req.body;
 
-    // Check if a user with the same email already exists
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
       return res.status(409).json({
@@ -29,13 +27,10 @@ export default class UserController {
       });
     }
 
-    // Hash the user's password
     const hashedPass = await hashPassword(password);
 
-    // Create new user object
     const user = { ...otherDetails, email, password: hashedPass };
 
-    // Save the new user in the database
     const newUser = await UserModel.create(user);
 
     if (newUser) {
@@ -45,7 +40,6 @@ export default class UserController {
       }
       return res.status(201).json({
         message: "Signup successful",
-        // data: newUser,
       });
     } else {
       return res.status(500).json({
@@ -69,7 +63,7 @@ export default class UserController {
  */
 static  getUserById = async (req: Request, res: Response) => {
   const id: string = req.params.userId;
-  const user = await getUserByIdHelper(id); // Reuse helper function
+  const user = await getUserByIdHelper(id); 
 
   if (user) {
     return res.status(200).json({
@@ -90,7 +84,6 @@ static findAllUsers = async (req: Request, res: Response) => {
     const arrayOfUsers = await UserModel.find().select("-password");
 
     if (arrayOfUsers.length > 0) {
-      // Users found
       return res.status(200).json({
         message: "Users found",
         data: arrayOfUsers,

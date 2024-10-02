@@ -32,14 +32,12 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   if (file.fieldname === 'media') {
-    // Allow both images and videos for 'media' field
     if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
       cb(null, true);
     } else {
       cb(new Error('Invalid file type. Only images and videos are allowed.'));
     }
   } else if (file.fieldname === 'profileImage') {
-    // Allow only images for 'profileImage' field
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {

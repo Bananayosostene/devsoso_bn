@@ -7,7 +7,6 @@ const comments: Router = express.Router();
 
 comments.get(
     "/:blogId/findCommentsOnBlog",
-    // isAuthenticated,
     commentLikeController.findCommentsOnBlog
 );
 comments.post(

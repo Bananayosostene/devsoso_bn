@@ -1,6 +1,5 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 
-// Define the UserAttributes interface
 export interface UserAttributes {
   username: string;
   email: string;
@@ -9,10 +8,8 @@ export interface UserAttributes {
   profileImage?: string;
 }
 
-// Extend Document while omitting '_id' from UserAttributes
 export interface UserDocument extends Omit<UserAttributes, '_id'>, Document {}
 
-// Define the user schema
 const userSchema: Schema<UserDocument> = new mongoose.Schema({
   username: {
     type: String,
@@ -42,7 +39,6 @@ const userSchema: Schema<UserDocument> = new mongoose.Schema({
   },
 });
 
-// Create the model
 const UserModel: Model<UserDocument> = mongoose.model<UserDocument>("User", userSchema);
 
 export default UserModel;
