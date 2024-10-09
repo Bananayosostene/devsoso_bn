@@ -15,7 +15,7 @@ const swaggerOptions: Options = {
         description: 'Local Server',
       },
       {
-        url: 'https://deployed.com',
+        url: 'https://devsoso-bn.onrender.com',
         description: 'Deployed Server',
       },
     ],

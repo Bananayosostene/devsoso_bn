@@ -3,11 +3,12 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import UserModel from "../database/models/userModel";
 import { sendEmail } from "../services/emailService";
 import { newUserNotificationTemplate } from "../templates/emailTemplete";
+import { GOOGLE_CALLBACK_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from "../config";
 
 passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID || '1045948515949-ohdj517qol8ob5t0f7odv7cb3r6k27o7.apps.googleusercontent.com',
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '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',
-    callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:4000/users/auth/google/callback'
+    clientID:GOOGLE_CLIENT_ID || '1045948515949-1r8ngef631l9vi0hqr6il06js0h82csu.apps.googleusercontent.com', 
+    clientSecret: GOOGLE_CLIENT_SECRET || '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',
+    callbackURL: GOOGLE_CALLBACK_URL || 'https://devsoso-bn.onrender.com/users/auth/google/callback',
   },
     async (accessToken, refreshToken, profile, done) => {
       try {
